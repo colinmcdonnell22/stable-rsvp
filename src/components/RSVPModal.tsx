@@ -102,36 +102,45 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
         nameInputRef.current?.focus();
       }, 100);
 
-      // Add ESC key listener
+      // Add keyboard listeners for specific keys only
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-
-        // Handle Cmd/Ctrl+Enter to submit
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && isFormValid) {
-          handleSubmit();
-        }
-
-        // Handle tab key for focus trap
-        if (e.key === 'Tab') {
-          const modal = modalRef.current;
-          if (!modal) return;
-
-          const focusableElements = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          );
+        // Only handle specific keys to avoid interfering with normal typing
+        switch (e.key) {
+          case 'Escape':
+            onClose();
+            break;
           
-          const firstElement = focusableElements[0] as HTMLElement;
-          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+          case 'Enter':
+            // Only handle Enter with modifiers
+            if ((e.metaKey || e.ctrlKey) && isFormValid) {
+              handleSubmit();
+              e.preventDefault();
+            }
+            break;
+            
+          case 'Tab':
+            const modal = modalRef.current;
+            if (!modal) return;
 
-          if (e.shiftKey && document.activeElement === firstElement) {
-            lastElement.focus();
-            e.preventDefault();
-          } else if (!e.shiftKey && document.activeElement === lastElement) {
-            firstElement.focus();
-            e.preventDefault();
-          }
+            const focusableElements = modal.querySelectorAll(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            
+            const firstElement = focusableElements[0] as HTMLElement;
+            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+            if (e.shiftKey && document.activeElement === firstElement) {
+              lastElement.focus();
+              e.preventDefault();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+              firstElement.focus();
+              e.preventDefault();
+            }
+            break;
+            
+          default:
+            // Ignore all other keys
+            return;
         }
       };
 
