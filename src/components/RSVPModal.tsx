@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface RSVPModalProps {
   isOpen: boolean;
@@ -38,6 +38,37 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
   // Form validation
   const isFormValid = formData.fullName.trim() !== '' && 
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+
+  const validateField = (name: string, value: string) => {
+    if (name === 'fullName') {
+      return value.trim() !== '';
+    }
+    if (name === 'email') {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+    return true;
+  };
+
+  // Define handleSubmit using useCallback
+  const handleSubmit = useCallback(() => {
+    // Validate required fields
+    const nameValid = validateField('fullName', formData.fullName);
+    const emailValid = validateField('email', formData.email);
+
+    if (!nameValid || !emailValid) {
+      setFormErrors({
+        fullName: !nameValid,
+        email: !emailValid
+      });
+      
+      // Show error banner for invalid form
+      setBannerFadingOut(false);
+      setShowErrorBanner(true);
+      return;
+    }
+
+    onSubmit(formData);
+  }, [formData, onSubmit, validateField]);
 
   // Error banner auto-dismiss
   useEffect(() => {
@@ -108,7 +139,7 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [isOpen, onClose, isFormValid]);
+  }, [isOpen, onClose, isFormValid, handleSubmit]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -120,42 +151,12 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
     }
   };
 
-  const validateField = (name: string, value: string) => {
-    if (name === 'fullName') {
-      return value.trim() !== '';
-    }
-    if (name === 'email') {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-    }
-    return true;
-  };
-
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'fullName' || name === 'email') {
       const isValid = validateField(name, value);
       setFormErrors(prev => ({ ...prev, [name]: !isValid }));
     }
-  };
-
-  const handleSubmit = () => {
-    // Validate required fields
-    const nameValid = validateField('fullName', formData.fullName);
-    const emailValid = validateField('email', formData.email);
-
-    if (!nameValid || !emailValid) {
-      setFormErrors({
-        fullName: !nameValid,
-        email: !emailValid
-      });
-      
-      // Show error banner for invalid form
-      setBannerFadingOut(false);
-      setShowErrorBanner(true);
-      return;
-    }
-
-    onSubmit(formData);
   };
 
   if (!isOpen) return null;
