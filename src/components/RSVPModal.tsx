@@ -102,54 +102,19 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
         nameInputRef.current?.focus();
       }, 100);
 
-      // Add keyboard listeners for specific keys only
-      const handleKeyDown = (e: KeyboardEvent) => {
-        // Only handle specific keys to avoid interfering with normal typing
-        switch (e.key) {
-          case 'Escape':
-            onClose();
-            break;
-          
-          case 'Enter':
-            // Only handle Enter with modifiers
-            if ((e.metaKey || e.ctrlKey) && isFormValid) {
-              handleSubmit();
-              e.preventDefault();
-            }
-            break;
-            
-          case 'Tab':
-            const modal = modalRef.current;
-            if (!modal) return;
-
-            const focusableElements = modal.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            
-            const firstElement = focusableElements[0] as HTMLElement;
-            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-            if (e.shiftKey && document.activeElement === firstElement) {
-              lastElement.focus();
-              e.preventDefault();
-            } else if (!e.shiftKey && document.activeElement === lastElement) {
-              firstElement.focus();
-              e.preventDefault();
-            }
-            break;
-            
-          default:
-            // Ignore all other keys
-            return;
+      // Only handle Escape key at document level
+      const handleEscapeKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
         }
       };
 
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keydown', handleEscapeKey);
       return () => {
-        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keydown', handleEscapeKey);
       };
     }
-  }, [isOpen, onClose, isFormValid, handleSubmit]);
+  }, [isOpen, onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -166,6 +131,14 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
     if (name === 'fullName' || name === 'email') {
       const isValid = validateField(name, value);
       setFormErrors(prev => ({ ...prev, [name]: !isValid }));
+    }
+  };
+
+  // Handle Cmd/Ctrl+Enter submission at form level
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && isFormValid) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -204,7 +177,7 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
           </button>
         </div>
 
-        <form className="space-y-6" noValidate>
+        <form className="space-y-6" noValidate onKeyDown={handleFormKeyDown}>
           <div className="space-y-2">
             <label htmlFor="fullName" className="block text-text-white">
               Full Name <span className="text-red-500">*</span>
