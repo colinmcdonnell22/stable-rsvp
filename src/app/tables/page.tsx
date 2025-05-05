@@ -320,8 +320,8 @@ export default function TablesPage() {
       <footer className="py-2 px-6 border-t border-text-white text-center text-sm opacity-70">
         {(() => {
           // Check if the user has a confirmed seat already
-          const userHasConfirmedSeat = guestData && Object.entries(seatMap).some(([_, tableSeats]) => 
-            Object.entries(tableSeats).some(([_, guestName]) => 
+          const userHasConfirmedSeat = guestData && Object.entries(seatMap).some(([, tableSeats]) => 
+            Object.entries(tableSeats).some(([, guestName]) => 
               guestName === guestData.fullName
             )
           );

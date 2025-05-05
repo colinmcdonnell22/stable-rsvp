@@ -39,7 +39,8 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
   const isFormValid = formData.fullName.trim() !== '' && 
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
-  const validateField = (name: string, value: string) => {
+  // Wrap validateField in useCallback
+  const validateField = useCallback((name: string, value: string) => {
     if (name === 'fullName') {
       return value.trim() !== '';
     }
@@ -47,7 +48,7 @@ export default function RSVPModal({ isOpen, onClose, onSubmit }: RSVPModalProps)
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
     return true;
-  };
+  }, []);
 
   // Define handleSubmit using useCallback
   const handleSubmit = useCallback(() => {
