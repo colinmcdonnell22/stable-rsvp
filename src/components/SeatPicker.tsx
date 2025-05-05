@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 // Constants for layout
-const TABLES_PER_ROW = 5;
+const TABLES_PER_ROW = 3;
 const TABLES_PER_COLUMN = 2;
 const TOTAL_TABLES = TABLES_PER_ROW * TABLES_PER_COLUMN;
 const SEATS_PER_TABLE = 8;
@@ -31,8 +31,6 @@ export default function SeatPicker({
   seatMap = {},
   currentUserName = ''
 }: SeatPickerProps) {
-  console.log('SeatPicker rendering with props:', { onSeatSelected, onSeatConfirmed, parentSelectedSeat, seatMap, currentUserName });
-  
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [hoveredSeat, setHoveredSeat] = useState<SeatPosition | null>(null);
@@ -42,13 +40,6 @@ export default function SeatPicker({
   const selectedSeat = parentSelectedSeat 
     ? { tableIndex: parentSelectedSeat.table - 1, seatIndex: parentSelectedSeat.seat - 1 } 
     : null;
-
-  console.log('SeatPicker internal selectedSeat state:', selectedSeat);
-
-  // For debugging - log when parent's selection changes
-  useEffect(() => {
-    console.log('Parent selected seat changed:', parentSelectedSeat);
-  }, [parentSelectedSeat]);
 
   // Update container size on resize
   useEffect(() => {
@@ -81,12 +72,12 @@ export default function SeatPicker({
 
   // Calculate dimensions based on container size
   const baseTableDiameter = Math.min(
-    (containerSize.width / (TABLES_PER_ROW + 0.5)) * 0.7,
-    (containerSize.height / (TABLES_PER_COLUMN + 0.5)) * 0.7
+    (containerSize.width / (TABLES_PER_ROW + 0.5)) * 0.8,
+    (containerSize.height / (TABLES_PER_COLUMN + 0.5)) * 0.8
   );
 
   // Ensure table diameter is reasonable for the device
-  const tableDiameter = Math.max(Math.min(baseTableDiameter, 160), 100);
+  const tableDiameter = Math.max(Math.min(baseTableDiameter, 180), 100);
   const seatDiameter = tableDiameter * 0.15;
   const tableRadius = tableDiameter / 2;
   const seatDistance = tableRadius * 1.1;
@@ -182,7 +173,6 @@ export default function SeatPicker({
 
   const handleSeatClick = (tableIndex: number, seatIndex: number) => {
     // Notify parent component about selection - let parent handle the state
-    console.log('SeatPicker: handleSeatClick', tableIndex, seatIndex);
     if (onSeatSelected) {
       onSeatSelected(tableIndex, seatIndex);
     }
@@ -200,7 +190,6 @@ export default function SeatPicker({
   };
 
   const handleConfirmSeat = () => {
-    console.log('SeatPicker: handleConfirmSeat', selectedSeat);
     if (selectedSeat && onSeatConfirmed) {
       onSeatConfirmed(selectedSeat.tableIndex, selectedSeat.seatIndex);
     }
@@ -252,20 +241,8 @@ export default function SeatPicker({
     <div 
       ref={containerRef} 
       className="w-full h-full overflow-auto bg-bg-black relative"
-      aria-label="Seat picker with 10 tables of 8 seats each"
+      aria-label={`Seat picker with ${TOTAL_TABLES} tables of ${SEATS_PER_TABLE} seats each`}
     >
-      <div className="flex justify-between p-4">
-        <div className="bg-green-500 text-bg-black px-3 py-1 rounded-md text-sm font-bold">
-          SeatPicker v1.4 - TEMP-NEXT14
-        </div>
-        <button 
-          onClick={() => console.log('Debug: Current state', { hoveredSeat, focusedSeat, selectedSeat, parentSelectedSeat, seatMap })}
-          className="bg-blue-500 text-bg-black px-3 py-1 rounded-md text-sm font-bold"
-        >
-          Debug State
-        </button>
-      </div>
-
       <div className="flex justify-center p-4 h-full">
         <svg 
           width={svgWidth} 
@@ -295,7 +272,7 @@ export default function SeatPicker({
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="var(--text-white)"
-                fontSize={tableDiameter * 0.12}
+                fontSize={tableDiameter * 0.14}
                 fontFamily="Helvetica Bold"
               >
                 {parseInt(table.id.split('-')[1]) + 1}
@@ -329,10 +306,7 @@ export default function SeatPicker({
                      onMouseLeave={canInteract ? () => handleSeatHover(tableIndex, seatIndex, false) : undefined}
                      onFocus={canInteract ? () => handleSeatFocus(tableIndex, seatIndex, true) : undefined}
                      onBlur={canInteract ? () => handleSeatFocus(tableIndex, seatIndex, false) : undefined}
-                     onClick={canInteract ? () => {
-                       console.log(`Seat clicked for Table ${tableNum}, Seat ${seatNum}`);
-                       handleSeatClick(tableIndex, seatIndex);
-                     } : undefined}
+                     onClick={canInteract ? () => handleSeatClick(tableIndex, seatIndex) : undefined}
                      onKeyDown={canInteract ? (e) => handleSeatKeyDown(e as React.KeyboardEvent, tableIndex, seatIndex) : undefined}
                      className={`focus:outline-none ${canInteract ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                      style={{ outline: isActive ? "2px solid #3b82f6" : "none" }}

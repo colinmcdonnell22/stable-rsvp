@@ -40,16 +40,12 @@ export default function TablesPage() {
   const [showGuestInfo, setShowGuestInfo] = useState(false);
   const [seatMap, setSeatMap] = useState<Record<number, Record<number, string>>>({});
   
-  console.log('TablesPage v1.3 - TEMP-NEXT14 rendering');
-  
   // Initialize state from localStorage on mount
   useEffect(() => {
-    console.log('TablesPage mount effect running');
     setMounted(true);
     
     // Redirect to home if no guest data is present
     if (!guestData) {
-      console.log('No guest data, redirecting to home');
       router.push('/');
       return;
     }
@@ -57,20 +53,17 @@ export default function TablesPage() {
     // Load selection state from localStorage if available
     const savedSelectedSeat = safelyGetFromStorage('selectedSeat');
     if (savedSelectedSeat) {
-      console.log('Loading saved seat from localStorage:', savedSelectedSeat);
       setSelectedSeat(savedSelectedSeat);
     }
     
     const savedConfirmedSeat = safelyGetFromStorage('confirmedSeat');
     if (savedConfirmedSeat) {
-      console.log('Loading saved confirmed seat from localStorage:', savedConfirmedSeat);
       setConfirmedSeat(savedConfirmedSeat);
     }
     
     // Load the seat map from localStorage
     const savedSeatMap = safelyGetFromStorage('seatMap');
     if (savedSeatMap) {
-      console.log('Loading saved seat map from localStorage:', savedSeatMap);
       setSeatMap(savedSeatMap);
     }
   }, [guestData, router]);
@@ -78,56 +71,35 @@ export default function TablesPage() {
   // Save selectedSeat to localStorage
   useEffect(() => {
     if (!mounted) return;
-    
-    console.log('Saving selectedSeat to localStorage:', selectedSeat);
     safelySetToStorage('selectedSeat', selectedSeat);
   }, [selectedSeat, mounted]);
   
   // Save confirmedSeat to localStorage
   useEffect(() => {
     if (!mounted) return;
-    
-    console.log('Saving confirmedSeat to localStorage:', confirmedSeat);
     safelySetToStorage('confirmedSeat', confirmedSeat);
   }, [confirmedSeat, mounted]);
   
   // Save seatMap to localStorage
   useEffect(() => {
     if (!mounted) return;
-    
-    console.log('Saving seatMap to localStorage:', seatMap);
     safelySetToStorage('seatMap', seatMap);
   }, [seatMap, mounted]);
   
-  // Debug log for selectedSeat changes
-  useEffect(() => {
-    console.log('TablesPage: selectedSeat changed', selectedSeat);
-  }, [selectedSeat]);
-  
-  // Debug log for confirmedSeat changes
-  useEffect(() => {
-    console.log('TablesPage: confirmedSeat changed', confirmedSeat);
-  }, [confirmedSeat]);
-  
   const handleSeatSelected = (tableIndex: number, seatIndex: number) => {
-    console.log(`TablesPage: Seat selected: Table ${tableIndex + 1}, Seat ${seatIndex + 1}`);
-    
     // Check if the seat is already taken by someone else
     const tableSeatMap = seatMap[tableIndex + 1] || {};
     const existingSeatAssignment = tableSeatMap[seatIndex + 1];
     
     // If the seat is already assigned to someone else, don't allow selection
     if (existingSeatAssignment && guestData && existingSeatAssignment !== guestData.fullName) {
-      console.log('Seat already assigned to:', existingSeatAssignment);
       return;
     }
     
     // Toggle selection if the same seat is selected again
     if (selectedSeat?.table === tableIndex + 1 && selectedSeat?.seat === seatIndex + 1) {
-      console.log('TablesPage: Toggling OFF the same seat');
       setSelectedSeat(null);
     } else {
-      console.log('TablesPage: Selecting new seat', { table: tableIndex + 1, seat: seatIndex + 1 });
       setSelectedSeat({ 
         table: tableIndex + 1, 
         seat: seatIndex + 1 
@@ -136,7 +108,6 @@ export default function TablesPage() {
     
     // Reset confirmation when selection changes
     if (confirmedSeat) {
-      console.log('TablesPage: Resetting confirmation state');
       setConfirmedSeat(null);
     }
   };
@@ -144,7 +115,6 @@ export default function TablesPage() {
   const handleSeatConfirmed = (tableIndex: number, seatIndex: number) => {
     // Return early if guestData is null (safety check)
     if (!guestData) {
-      console.error('Cannot confirm seat: guest data is missing');
       return;
     }
     
@@ -194,10 +164,6 @@ export default function TablesPage() {
     
     // Update state
     setSeatMap(updatedSeatMap);
-    
-    // Here you would typically make an API call to reserve the seat
-    console.log('Seat confirmed:', seatInfo);
-    console.log('Updated seatMap:', updatedSeatMap);
   };
   
   const clearSelection = () => {
@@ -240,9 +206,6 @@ export default function TablesPage() {
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b border-text-white gap-3">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl md:text-3xl uppercase">Seat Picker</h1>
-          <div className="bg-green-500 text-bg-black px-3 py-1 rounded-md text-sm font-bold">
-            TablesPage v1.3 - TEMP-NEXT14
-          </div>
         </div>
         
         <div className="flex gap-4">
@@ -277,7 +240,7 @@ export default function TablesPage() {
           
           {/* Confirmed seat info */}
           {confirmedSeat && (
-            <div className="absolute top-4 right-4 bg-green-800 bg-opacity-90 border border-green-400 p-4 shadow-lg animate-fadeIn">
+            <div className="absolute top-4 right-4 bg-green-800 bg-opacity-90 border border-green-400 p-4 shadow-lg animate-fadeIn max-w-[250px] sm:max-w-none">
               <p className="font-bold mb-1">Seat Confirmed!</p>
               <p>Table {confirmedSeat.table}, Seat {confirmedSeat.seat}</p>
               <button 
